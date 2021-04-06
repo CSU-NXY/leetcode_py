@@ -1,3 +1,7 @@
+"""
+本文件中存放leetcode经典题目
+"""
+
 from datastructure import *
 
 
