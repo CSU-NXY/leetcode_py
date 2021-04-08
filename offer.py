@@ -17,3 +17,14 @@ def getIntersectionNode(headA: ListNode, headB: ListNode) -> ListNode:
         p2 = p2.next if p2 else headA
 
     return p1
+
+
+def search(nums, target):
+    """
+    剑指Offer 53 统计一个数字在排序数组中出现的次数
+    """
+    cnt = 0
+    for e in nums:
+        if e == target:
+            cnt += 1
+    return cnt

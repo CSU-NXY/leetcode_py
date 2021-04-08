@@ -227,6 +227,22 @@ def subsetsWithDup(nums):
     return list(result)
 
 
+def findMin(nums):
+    """
+    153 寻找旋转数组中的最小值\n
+    关键词：二分查找
+    """
+    low = 0
+    high = len(nums) - 1
+    while high - low > 1:
+        pivot = (high+low)//2
+        if nums[pivot] > nums[high]:
+            low = pivot + 1
+        elif nums[pivot] < nums[high]:
+            high = pivot
+    return min(nums[low], nums[high])
+
+
 # 474
 def findMaxForm(strs, m, n) -> int:
     # dp = [[0]*(n+1)]*(m+1) #! 这种写法是错误的，改一个值会影响其他值
