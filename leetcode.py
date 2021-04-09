@@ -188,6 +188,56 @@ def strStr(haystack: str, needle: str) -> int:
     return -1
 
 
+def maxSubArray(nums: list) -> int:
+    """
+    53 最大子序和。给定一个整数数组 nums ，找到一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
+    """
+    if len(nums) == 1:
+        return nums[0]
+
+    result = nums[0]
+    current_sum = 0
+    for n in nums:
+        current_sum = max(current_sum, 0) + n
+        result = max(result, current_sum)
+    return result
+
+
+def spiralOrder(matrix: list) -> list:
+    """
+    54 螺旋矩阵。给你一个 m 行 n 列的矩阵 matrix ，请按照 顺时针螺旋顺序 ，返回矩阵中的所有元素。
+    关键词：递归
+    """
+    if len(matrix) == 0:
+        return []
+    if len(matrix) == 1:
+        return matrix[0]
+    if len(matrix[0]) == 1:
+        return [j for i in matrix for j in i]
+    result = []
+    result += matrix.pop(0)
+    for i in range(len(matrix)):
+        result.append(matrix[i].pop(-1))
+    result += matrix.pop(-1)[::-1]
+    for i in range(len(matrix)-1, 0, -1):
+        result.append(matrix[i].pop(0))
+    return result + spiralOrder(matrix)
+
+
+def lengthOfLastWord(s: str) -> int:
+    """
+    58 最后一个单词的长度。给你一个字符串 s，由若干单词组成，单词之间用空格隔开。返回字符串中最后一个单词的长度。
+    如果不存在最后一个单词，请返回 0
+
+    思考：如果不用split应该怎么做
+    """
+    l = s.split()
+    if len(l) == 0:
+        return 0
+    else:
+        return len(l[-1])
+
+
 def climbStairs(n):
     """
     70 爬楼梯。假设你正在爬楼梯。需要 n 阶你才能到达楼顶。每次你可以爬 1 或 2 个台阶。你有多少种不同的方法可以爬到楼顶呢？
@@ -242,6 +292,45 @@ def subsetsWithDup(nums):
     result = [tuple(sorted(r)) for r in result]
     result = set(result)
     return list(result)
+
+
+def maxProfit(prices: list) -> int:
+    """
+    121 买卖股票的最佳时机。\n
+    关键词：动态规划 只能买卖一次
+    """
+    if len(prices) == 1:
+        return 0
+    minprice = prices[0]
+    result = 0
+    for p in prices[1:]:
+        minprice = min(minprice, p)
+        result = max(result, p-minprice)
+    return result
+
+
+def maxProfit2(prices: list) -> int:
+    """
+    122 买卖股票的最佳时机 II
+    关键词：动态规划 能买卖任意次 卖出后才能再买
+    """
+    # 动态规划的做法
+    # if len(prices) == 1:
+    #     return 0
+    # dp = [[0]*2] * len(prices)
+    # # 初始状态
+    # dp[0][0] = 0
+    # dp[0][1] = -1 * prices[0]
+    # for i in range(1, len(prices)):
+    #     dp[i][0] = max(dp[i-1][0], dp[i-1][1]+prices[i])
+    #     dp[i][1] = max(dp[i-1][0]-prices[i], dp[i-1][1])
+    # return dp[-1][0]
+
+    # 离谱的做法，不放过每次能挣钱的机会
+    result = 0
+    for i in range(1, len(prices)):
+        result += max(prices[i]-prices[i-1], 0)
+    return result
 
 
 def findMin(nums):
