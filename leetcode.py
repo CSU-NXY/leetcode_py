@@ -99,6 +99,23 @@ def myAtoi(s: str) -> int:
     return min(max(result, -2**31), 2**31-1)
 
 
+def longestCommonPrefix(strs: list) -> str:
+    if not strs:
+        return ""
+
+    prefix = strs.pop(0)
+    while len(strs) > 0:
+        s = strs.pop(0)
+        prefix_ = []
+        for i in range(min(len(prefix), len(s))):
+            if prefix[i] == s[i]:
+                prefix_.append(prefix[i])
+            else:
+                break
+        prefix = "".join(prefix_)
+    return prefix
+
+
 def threeSum(nums: list):
     """"
     15 三数之和，给定整数数组nums，给出所有和为0的不重复的三元组
@@ -229,8 +246,8 @@ def subsetsWithDup(nums):
 
 def findMin(nums):
     """
-    153 寻找旋转数组中的最小值\n
-    关键词：二分查找
+    153 寻找无重复升序旋转数组中的最小值\n
+    关键词：二分查找 无重复
     """
     low = 0
     high = len(nums) - 1
@@ -240,6 +257,24 @@ def findMin(nums):
             low = pivot + 1
         elif nums[pivot] < nums[high]:
             high = pivot
+    return min(nums[low], nums[high])
+
+
+def findMin2(nums):
+    """
+    154 寻找有重复升序旋转数组中的最小值\n
+    关键词：有重复
+    """
+    low = 0
+    high = len(nums) - 1
+    while high - low > 1:
+        pivot = (high+low)//2
+        if nums[pivot] > nums[high]:
+            low = pivot + 1
+        elif nums[pivot] < nums[high]:
+            high = pivot
+        else:
+            high -= 1   # 当nums[pivot]==nums[high]时，无法判断pivot在左边还是右边，因此干脆让high减一
     return min(nums[low], nums[high])
 
 
