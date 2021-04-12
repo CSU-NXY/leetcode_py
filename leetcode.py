@@ -314,6 +314,37 @@ def strStr(haystack: str, needle: str) -> int:
     return -1
 
 
+def divide(dividend: int, divisor: int) -> int:
+    """
+    29 两数相除 返回被除数dividend除以除数divisor得到的商。
+    """
+    # the only situation that overflow occurs
+    if dividend == -2 ** 31 and divisor == -1:
+        return 2 ** 31 - 1
+
+    signal = (dividend > 0 and divisor > 0) or \
+             (dividend < 0 and divisor < 0)
+
+    dividend, divisor = abs(dividend), abs(divisor)
+    i = 0
+    k = 1
+    cur_divisor = divisor
+
+    while dividend >= divisor:
+        if dividend >= cur_divisor:
+            dividend -= cur_divisor
+            i += k
+
+            k += k
+            cur_divisor += cur_divisor
+
+        else:
+            k = 1
+            cur_divisor = divisor
+    i = i if signal else -i
+    return i
+
+
 def maxSubArray(nums: list) -> int:
     """
     53 最大子序和。给定一个整数数组 nums ，找到一个具有最大和的连续子数组（子数组最少包含一个元素），返回其最大和。
@@ -510,6 +541,19 @@ def largestNumber(nums: list) -> str:
 
     nums = sorted([myStr(n) for n in nums], reverse=True)
     return str(int("".join([n.s for n in nums])))
+
+
+def isUgly(n: int) -> bool:
+    """
+    263 丑数 丑数就是只包含质因数 2、3 和/或 5 的正整数。
+    """
+    while n // 2 == n / 2:
+        n /= 2
+    while n // 3 == n / 3:
+        n /= 3
+    while n // 5 == n / 5:
+        n /= 5
+    return n == 1
 
 
 # 474
