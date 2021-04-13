@@ -169,6 +169,22 @@ def longestCommonPrefix(strs: list) -> str:
     return prefix
 
 
+def maxArea(height: list) -> int:
+    """
+    11. 盛最多水的容器
+    """
+    area = -1
+    l, r = 0, len(height)-1
+    while l < r:
+        area = max(area, (r-l)*min(height[l], height[r]))
+        # 每次移动更矮的那边，因为那边已经达到了人生最巅峰了
+        if height[l] <= height[r]:
+            l += 1
+        else:
+            r -= 1
+    return area
+
+
 def threeSum(nums: list):
     """"
     15 三数之和，给定整数数组nums，给出所有和为0的不重复的三元组
@@ -453,6 +469,22 @@ def permute(nums: list) -> list:
         # 选定一个数作为开头，将问题转化为求剩余n-1个数的全排列
         result += [[nums[i]] + p for p in permute(nums[:i]+nums[i+1:])]
     return result
+
+
+def rotate(matrix: list) -> None:
+    """
+    48. 旋转图像。Inplace顺时针旋转90°，O(1)空间复杂度
+    思路：从外往内一圈一圈旋转
+    """
+    n = len(matrix)
+    for i in range(n//2):
+        for j in range(i, n-1-i):
+            tmp = matrix[i][j]
+            x, y = n-1-i, n-1-j
+            matrix[i][j] = matrix[y][i]
+            matrix[y][i] = matrix[x][y]
+            matrix[x][y] = matrix[j][x]
+            matrix[j][x] = tmp
 
 
 def maxSubArray(nums: list) -> int:

@@ -3,4 +3,4 @@ from interview import *
 from datastructure import *
 
 if __name__ == '__main__':
-    print(rob([2,1,1,2]))
+    print(maxArea([1,3,2,5,25,24,5]))
