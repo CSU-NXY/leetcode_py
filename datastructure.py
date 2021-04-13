@@ -15,3 +15,10 @@ class ListNode:
     def append(self, val):
         self.next = ListNode(val)
         return self.next
+
+
+class TreeNode:
+    def __init__(self, val=0, left=None, right=None):
+        self.val = val
+        self.left = left
+        self.right = right

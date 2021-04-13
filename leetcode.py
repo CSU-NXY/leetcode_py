@@ -66,6 +66,58 @@ def lengthOfLongestSubstring(s: str) -> int:
     return max_L
 
 
+def findMedianSortedArrays(nums1: list, nums2: list) -> float:
+    """
+    4. 寻找两个正序数组的中位数，要求O(log(m+n))
+    思路：将问题转化为寻找两个已排序数组中第k小的数，每次剔除k/2个数
+    """
+    def findKthSmallest(nums1: list, nums2: list, k: int) -> float:
+        m, n = len(nums1), len(nums2)
+        if m > n:
+            return findKthSmallest(nums2, nums1, k)
+        if m == 0:
+            return nums2[k-1]
+        if k == 1:
+            return min(nums1[0], nums2[0])
+        i = min(m, k//2) - 1
+        j = min(n, k//2) - 1
+        if nums1[i] > nums2[j]:
+            return findKthSmallest(nums1, nums2[j+1:], k - j - 1)
+        else:
+            return findKthSmallest(nums1[i+1:], nums2, k - i - 1)
+
+    m, n = len(nums1), len(nums2)
+    # m+n为奇数时left等于right
+    left = (m + n + 1) // 2
+    right = (m + n + 2) // 2
+    return (findKthSmallest(nums1, nums2, left) + findKthSmallest(nums1, nums2, right)) / 2
+
+
+def convert(s: str, numRows: int):
+    """
+    6. Z 字形变换
+    """
+    if numRows == 1:
+        return s
+
+    arrs = [[] for _ in range(numRows)]
+
+    i, step = 0, 1
+    for ch in s:
+        arrs[i].append(ch)
+        i += step
+
+        if i >= numRows:
+            i = numRows-2
+            step = -1
+        if i <= -1:
+            i = 1
+            step = 1
+
+    arrs = ["".join(i) for i in arrs]
+    return "".join(arrs)
+
+
 def reverse(x: int) -> int:
     """
     7 反转一个整数，且避免溢出
@@ -179,7 +231,6 @@ def threeSumClosest(nums: list, target: int) -> int:
     return result
 
 
-
 def fourSum(nums: list, target: int) -> list:
     """
     18. 四数之和，给定整数数组nums，给出所有和为target的不重复的四元组\n
@@ -286,6 +337,18 @@ def removeDuplicates(nums):
     return i
 
 
+def removeElement(nums: list, val: int) -> int:
+    """
+    27. 移除元素。Inplace移除元素，返回移除后的长度
+    """
+    i = 0
+    for j in range(len(nums)):
+        if nums[j] != val:
+            nums[i] = nums[j]
+            i += 1
+    return i
+
+
 # 28 用滚动哈希实现strStr
 def strStr(haystack: str, needle: str) -> int:
     if len(needle) > len(haystack):
@@ -343,6 +406,53 @@ def divide(dividend: int, divisor: int) -> int:
             cur_divisor = divisor
     i = i if signal else -i
     return i
+
+
+def multiply(num1: str, num2: str) -> str:
+    """
+    43. 字符串相乘
+    """
+    if num1 == '0' or num2 == '0':
+        return '0'
+
+    m, n = len(num1), len(num2)
+    tmp = [0] * (m + n)
+    for i in range(m):
+        for j in range(n):
+            tmp[m+n-1-i-j] += int(num1[m-1-i]) * int(num2[n-1-j])
+
+    t = 0
+    for i in range(len(tmp)-1, -1, -1):
+        tmp[i] += t
+        t = tmp[i] // 10
+        tmp[i] = tmp[i] % 10
+
+    i = 0
+    while tmp[i] == 0:
+        i += 1
+
+    result = ""
+    while i < len(tmp):
+        result += str(tmp[i])
+        i += 1
+    return result
+
+
+def permute(nums: list) -> list:
+    """
+    46. 全排列 返回数组nums的全排列
+    思路：可以用itertools.permutations函数；参考答案用的是回溯，但是我没看懂
+    """
+    if len(nums) == 0:
+        return []
+    if len(nums) == 1:
+        return [nums]
+
+    result = []
+    for i in range(len(nums)):
+        # 选定一个数作为开头，将问题转化为求剩余n-1个数的全排列
+        result += [[nums[i]] + p for p in permute(nums[:i]+nums[i+1:])]
+    return result
 
 
 def maxSubArray(nums: list) -> int:
@@ -524,6 +634,22 @@ def findMin2(nums):
     return min(nums[low], nums[high])
 
 
+def rob(nums: list) -> int:
+    """
+    198. 打家劫舍
+    关键词：动态规划
+    """
+    if len(nums) == 1:
+        return nums[0]
+
+    nosteal = nums[0]
+    steal = max(nums[0], nums[1])
+    for i in range(2, len(nums)):
+        # 这回合不偷/偷
+        nosteal, steal = steal, max(nosteal+nums[i], steal)
+    return steal
+
+
 def largestNumber(nums: list) -> str:
     """
     179 最大数 给定一组非负整数nums重新排列每个数的顺序（每个数不可拆分）使之组成一个最大的整数。
@@ -556,24 +682,45 @@ def isUgly(n: int) -> bool:
     return n == 1
 
 
-# 474
 def findMaxForm(strs, m, n) -> int:
+    """
+    474. 一和零
+    关键词：01背包 动态规划
+    """
     # dp = [[0]*(n+1)]*(m+1) #! 这种写法是错误的，改一个值会影响其他值
     dp = [[0]*(n+1) for _ in range(m+1)]
     for s in strs:
         m_ = s.count('0')
         n_ = s.count('1')
 
-        # 为何这里要从大往小？
         for i in range(m, m_-1, -1):
             for j in range(n, n_-1, -1):
                 # 这里每次修改i,j时，用到的i-m_,j-n_总比i,j要小，即为还未修改的上一个状态的值
                 dp[i][j] = max(dp[i][j], 1+dp[i-m_][j-n_])
-                print(i, j)
-                print(i-m_, j-n_)
     return dp[m][n]
 
 
+def minDiffInBST(root: TreeNode) -> int:
+    """
+    783. 二叉搜索树节点最小距离 \n
+    关键词：中序遍历， BFS
+    """
+    def dfs(root, prev, result):
+        if root is None:
+            return
+        dfs(root.left, prev, result)
+        # 题目中约定val非负
+        # print(root.val)
+        if prev[0] == -1:
+            prev[0] = root.val
+        else:
+            result[0] = min(result[0], root.val-prev[0])
+            prev[0] = root.val
+        dfs(root.right, prev, result)
+
+    prev, result = [-1], [10**6]
+    dfs(root, prev, result)
+    return result[0]
 
 
 # 1006
