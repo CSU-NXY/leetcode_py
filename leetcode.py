@@ -247,6 +247,21 @@ def threeSumClosest(nums: list, target: int) -> int:
     return result
 
 
+def letterCombinations(digits: str) -> list:
+    """
+    17. 电话号码的字母组合
+    """
+    if len(digits) == 0:
+        return []
+
+    dic = {"2":"abc", "3":"def", "4": "ghi", "5": "jkl", "6": "mno", "7": "pqrs", "8":"tuv", "9":"wxyz"}
+    result = [""]
+    for d in digits:
+        letters = dic[d]
+        result = [s + l for s in result for l in letters]
+    return result
+
+
 def fourSum(nums: list, target: int) -> list:
     """
     18. 四数之和，给定整数数组nums，给出所有和为target的不重复的四元组\n
@@ -274,6 +289,25 @@ def fourSum(nums: list, target: int) -> list:
 
                 if nums[k] + nums[l] == t:
                     result.append([nums[i],nums[j],nums[k],nums[l]])
+    return result
+
+
+def generateParenthesis(n: int) -> list:
+    """
+    22. 括号生成 \n
+    思路：递归逐一添加左括号或右括号，剩余的左括号数应当始终小于等于右括号数
+    """
+    def helper(s, left, right, result):
+        if left == right == 0:
+            result.append(s)
+            return
+        if left > right or right < 0 or left < 0:
+            return
+        helper(s+'(', left-1, right, result)
+        helper(s + ')', left, right-1, result)
+
+    result = []
+    helper("", n, n, result)
     return result
 
 
@@ -365,6 +399,20 @@ def removeElement(nums: list, val: int) -> int:
     return i
 
 
+def removeElement(nums: list, val: int) -> int:
+    """
+    27. 移除元素。Inplace移除数值等于val的元素，返回移除后的长度.
+    """
+    l, r = 0, len(nums)
+    while l < r:
+        if nums[l] == val:
+            nums[l] = nums[r-1]
+            r -= 1
+        else:
+            l += 1
+    return l
+
+
 # 28 用滚动哈希实现strStr
 def strStr(haystack: str, needle: str) -> int:
     if len(needle) > len(haystack):
@@ -422,6 +470,46 @@ def divide(dividend: int, divisor: int) -> int:
             cur_divisor = divisor
     i = i if signal else -i
     return i
+
+
+def nextPermutation(nums: list) -> None:
+    """
+    31. 下一个排列
+    """
+    if len(nums) == 1:
+        return
+
+    flag = True
+    for i in range(len(nums)-1, 0, -1):
+        if nums[i] > nums[i-1]:
+            nums[i], nums[i-1] = nums[i-1], nums[i]
+            flag = False
+            break
+
+    if flag:
+        nums.sort()
+
+
+def combinationSum(candidates: list, target: int) -> list:
+    """
+    39. 组合总和
+    思路：升序，去重，从小到大选择数字
+    """
+    candidates = sorted(candidates)
+
+    result = []
+
+    def helper(s, use, remain):
+        for i in range(s, len(candidates)):
+            c = candidates[i]
+            if c == remain:
+                result.append(use+[c])
+            elif c < remain:
+                helper(i, use+[c], remain-c)
+            else:
+                return
+    helper(0, [], target)
+    return result
 
 
 def multiply(num1: str, num2: str) -> str:
@@ -502,6 +590,28 @@ def maxSubArray(nums: list) -> int:
     return result
 
 
+def myPow(x: float, n: int) -> float:
+    """
+    50. Pow(x, n)
+    """
+    sign = n >= 0
+
+    n = abs(n)
+    i = 0
+    result = 1
+    tmp, k = x, 1
+    while i < n:
+        if i+k <= n:
+            result *= tmp
+            i += k
+
+            tmp *= tmp
+            k *= 2
+        else:
+            tmp, k = x, 1
+    return result if sign else 1/result
+
+
 def spiralOrder(matrix: list) -> list:
     """
     54 螺旋矩阵。给你一个 m 行 n 列的矩阵 matrix ，请按照 顺时针螺旋顺序 ，返回矩阵中的所有元素。
@@ -576,6 +686,51 @@ def removeDuplicates2(nums: list) -> int:
             nums[i] = e
             i += 1
     return i
+
+
+def isScramble(s1: str, s2: str) -> bool:
+    """
+    87. 扰乱字符串
+    关键词：记忆化递归
+    """
+    if s1 == s2:
+        return True
+
+    def eq(s1: str, s2: str):
+        a, b = {}, {}
+        for ch in s1:
+            a[ch] = a.get(ch, 0) + 1
+        for ch in s2:
+            b[ch] = b.get(ch, 0) + 1
+        return a == b
+
+    def helper(s1: str, s2: str, memory):
+        result = memory.get(s1+'#'+s2, -1)
+        if result == 1:
+            return True
+        if result == 0:
+            return False
+        if len(s1) != len(s2):
+            memory[s1+'#'+s2] = 0
+            return False
+        if s1 == s2:
+            memory[s1+'#'+s2] = 1
+            return True
+
+        for i in range(len(s1)-1):
+            if eq(s1[:i+1], s2[:i+1]) and eq(s1[i+1:], s2[i+1:]) and\
+                    helper(s1[:i+1], s2[:i+1], memory) and helper(s1[i+1:], s2[i+1:], memory):
+                memory[s1+'#'+s2] = 1
+                return True
+            if eq(s1[:i+1], s2[-i-1:]) and eq(s1[i+1:], s2[:len(s1)-i-1]) and\
+                    helper(s1[:i+1], s2[-i-1:], memory) and helper(s1[i+1:], s2[:len(s1)-i-1], memory):
+                memory[s1+'#'+s2] = 1
+                return True
+        memory[s1+'#'+s2] = 0
+        return False
+    memory = {}
+    return helper(s1, s2, memory)
+
 
 
 def subsetsWithDup(nums):
@@ -666,22 +821,6 @@ def findMin2(nums):
     return min(nums[low], nums[high])
 
 
-def rob(nums: list) -> int:
-    """
-    198. 打家劫舍
-    关键词：动态规划
-    """
-    if len(nums) == 1:
-        return nums[0]
-
-    nosteal = nums[0]
-    steal = max(nums[0], nums[1])
-    for i in range(2, len(nums)):
-        # 这回合不偷/偷
-        nosteal, steal = steal, max(nosteal+nums[i], steal)
-    return steal
-
-
 def largestNumber(nums: list) -> str:
     """
     179 最大数 给定一组非负整数nums重新排列每个数的顺序（每个数不可拆分）使之组成一个最大的整数。
@@ -701,6 +840,33 @@ def largestNumber(nums: list) -> str:
     return str(int("".join([n.s for n in nums])))
 
 
+def rob(nums: list) -> int:
+    """
+    198. 打家劫舍
+    关键词：动态规划
+    """
+    if len(nums) == 1:
+        return nums[0]
+
+    nosteal = nums[0]
+    steal = max(nums[0], nums[1])
+    for i in range(2, len(nums)):
+        # 这回合不能偷/能偷
+        nosteal, steal = steal, max(nosteal+nums[i], steal)
+    return steal
+
+
+def rob2(nums: list) -> int:
+    """
+    213. 打家劫舍 II
+    思路：拆成[1:]和[:-1]两个序列，返回rob的最大值就行
+    """
+    if len(nums) == 1:
+        return nums[0]
+
+    return max(rob(nums[1:]), rob(nums[:-1]))
+
+
 def isUgly(n: int) -> bool:
     """
     263 丑数 丑数就是只包含质因数 2、3 和/或 5 的正整数。
@@ -712,6 +878,27 @@ def isUgly(n: int) -> bool:
     while n // 5 == n / 5:
         n /= 5
     return n == 1
+
+
+def nthUglyNumber(n: int) -> int:
+    """
+    264. 丑数 II
+    思路：三个指针分别对应2、3和5
+    """
+    dp = [0] * (n+1)
+    dp[1] = 1
+    p2, p3, p5 = 1, 1, 1
+    for i in range(2, n+1):
+        tmp2, tmp3, tmp5 = dp[p2] * 2, dp[p3] * 3, dp[p5] * 5
+        dp[i] = min(tmp2, tmp3, tmp5)
+        # 注意这里不能用if else。比如当dp[i]等于6时，p2和p3要同时加一
+        if dp[i] == tmp2:
+            p2 += 1
+        if dp[i] == tmp3:
+            p3 += 1
+        if dp[i] == tmp5:
+            p5 += 1
+    return dp[n]
 
 
 def findMaxForm(strs, m, n) -> int:
