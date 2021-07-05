@@ -40,6 +40,17 @@ class TreeNode:
         self.left = left
         self.right = right
 
+    def setValues(self, vals):
+        self.val = vals.pop(0)
+        nodes = [self]
+        for idx in range(0, len(vals), 2):
+            n = nodes.pop(0)
+            n.left = TreeNode(vals[idx])
+            n.right = TreeNode(vals[idx+1]) if idx + 1 < len(vals) else None
+            nodes.append(n.left)
+            if n.right is not None:
+                nodes.append(n.right)
+
 
 class Trie:
 

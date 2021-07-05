@@ -3,4 +3,8 @@ from interview import *
 from datastructure import *
 
 if __name__ == '__main__':
-    print(bf("mississippi","issip"))
+    result = None
+
+    result = longestPalindrome("babad")
+
+    print(result)

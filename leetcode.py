@@ -2,8 +2,22 @@
 本文件中存放leetcode经典题目
 """
 import heapq
+from typing import List
 
 from datastructure import *
+
+
+def twoSum(nums: List[int], target: int) -> List[int]:
+    """
+    1. 两数之和
+    """
+    dict = {}
+    for idx, e in enumerate(nums):
+        if target - e in dict:
+            return [idx, dict[target-e]]
+        else:
+            dict[e] = idx
+    return []
 
 
 def addTwoNumbers(l1: ListNode, l2: ListNode) -> ListNode:
@@ -73,10 +87,10 @@ def findMedianSortedArrays(nums1: list, nums2: list) -> float:
     """
     def findKthSmallest(nums1: list, nums2: list, k: int) -> float:
         m, n = len(nums1), len(nums2)
-        if m > n:
-            return findKthSmallest(nums2, nums1, k)
         if m == 0:
             return nums2[k-1]
+        if n == 0:
+            return nums1[k-1]
         if k == 1:
             return min(nums1[0], nums2[0])
         i = min(m, k//2) - 1
@@ -612,6 +626,74 @@ def myPow(x: float, n: int) -> float:
     return result if sign else 1/result
 
 
+def solveNQueens(n: int) -> list:
+    """
+    51. N 皇后
+    思路：回溯，可以考虑用哈希表或位运算加速isValid函数
+    """
+    def isValid(board, row, col):
+        for i in range(n):
+            if board[row][i] == 'Q' or board[i][col] == 'Q':
+                return False
+            if row+i < n and col+i < n and board[row + i][col + i] == 'Q':
+                return False
+            if row-i >= 0 and col-i >= 0 and board[row - i][col - i] == 'Q':
+                return False
+            if row+i < n and col-i >= 0 and board[row + i][col - i] == 'Q':
+                return False
+            if row-i >= 0 and col+i < n and board[row - i][col + i] == 'Q':
+                return False
+        return True
+
+    def placeOrRemoveQueen(board, row, col, place=True):
+        list_row = list(board[row])
+        list_row[col] = 'Q' if place else '.'
+        board[row] = ''.join(list_row)
+
+    result = []
+    def backtrace(board, k, result, last_row):
+        if k == 0:
+            result.append(list(board))
+            return
+        row = last_row+1
+        for col in range(n):
+            if isValid(board, row, col):
+                placeOrRemoveQueen(board, row, col, True)
+                backtrace(board, k-1, result, row)
+                placeOrRemoveQueen(board, row, col, False)
+        return
+    backtrace(["."*n for _ in range(n)], n, result, -1)
+    return result
+
+def totalNQueens(n: int) -> int:
+    """
+    52. N皇后 II
+    """
+    def backtrace(row, columnConfilict=0, dConfilict=0, idConfilict=0):
+        if row == n:
+            return 1
+        cnt = 0
+        available = ((1 << n) - 1) & ~(columnConfilict | dConfilict | idConfilict)
+        while available:
+            position = (-available) & available
+            available = available & (available-1)
+            cnt += backtrace(row + 1, columnConfilict | position, (dConfilict | position) >> 1, (idConfilict | position) << 1)
+        return cnt
+    return backtrace(0)
+
+
+def maxSubArray(nums: List[int]) -> int:
+    """
+    53. 最大子序和
+    """
+    result, s = nums[0], nums[0]
+    for j in range(1, len(nums)):
+        s = max(s+nums[j], nums[j])
+        result = max(result, s)
+        s = max(s, 0)
+    return result
+
+
 def spiralOrder(matrix: list) -> list:
     """
     54 螺旋矩阵。给你一个 m 行 n 列的矩阵 matrix ，请按照 顺时针螺旋顺序 ，返回矩阵中的所有元素。
@@ -633,6 +715,24 @@ def spiralOrder(matrix: list) -> list:
     return result + spiralOrder(matrix)
 
 
+def canJump(nums: list) -> bool:
+    """
+    55. 跳跃游戏
+
+    给定一个非负整数数组 nums ，你最初位于数组的 第一个下标 。
+
+    数组中的每个元素代表你在该位置可以跳跃的最大长度。
+
+    判断你是否能够到达最后一个下标。
+    """
+    maxJump = -1
+    for idx in range(len(nums)):
+        maxJump = max(maxJump, idx+nums[idx])
+        if maxJump == idx:
+            break
+    return maxJump >= len(nums)-1
+
+
 def lengthOfLastWord(s: str) -> int:
     """
     58 最后一个单词的长度。给你一个字符串 s，由若干单词组成，单词之间用空格隔开。返回字符串中最后一个单词的长度。
@@ -645,6 +745,29 @@ def lengthOfLastWord(s: str) -> int:
         return 0
     else:
         return len(l[-1])
+
+
+def plusOne(digits: list) -> list:
+    """
+    66. 加一
+    """
+    c = 0
+    for i in range(len(digits)-1, -1, -1):
+        c = (digits[i] + 1) // 10
+        digits[i] = (digits[i] + 1) % 10
+
+        if c == 0:
+            break
+    if c == 1:
+        digits.insert(0, 1)
+    return digits
+
+
+def addBinary(a: str, b: str) -> str:
+    """
+    67. 二进制求和
+    """
+    return '{0:b}'.format(int(a,2) + int(b,2))
 
 
 def climbStairs(n):
@@ -660,6 +783,20 @@ def climbStairs(n):
     for i in range(3, n + 1):
         dp.append(dp[i - 1] + dp[i - 2])
     return dp[-1]
+
+
+def combine(n: int, k: int) -> list:
+    """
+    77. 组合 给定两个整数 n 和 k，返回 1 ... n 中所有可能的 k 个数的组合。
+    """
+    def subcombine(k, arr):
+        if k == 0 or len(arr) < k:
+            return [[]]
+        result = []
+        for i in range(len(arr)-k+1):
+            result += [[arr[i]] + subresult for subresult in subcombine(k-1, arr[i+1:])]
+        return result
+    return subcombine(k, list(range(1, n+1)))
 
 
 def subsets(nums):
@@ -731,6 +868,23 @@ def isScramble(s1: str, s2: str) -> bool:
     memory = {}
     return helper(s1, s2, memory)
 
+
+def merge(nums1: List[int], m: int, nums2: List[int], n: int) -> None:
+    """
+    88. 合并两个有序数组
+    """
+    i, j = m-1, n-1
+    while i >= 0 and j >= 0:
+        if nums1[i] > nums2[j]:
+            nums1[i+j+1] = nums1[i]
+            i -= 1
+        else:
+            nums1[i+j+1] = nums2[j]
+            j -= 1
+    if i == -1:
+        nums1[:j+1] = nums2[:j+1]
+    else:
+        nums1[:i+1] = nums1[:i+1]
 
 
 def subsetsWithDup(nums):
@@ -856,6 +1010,135 @@ def rob(nums: list) -> int:
     return steal
 
 
+def numIslands(grid: List[List[str]]) -> int:
+    """
+    200. 岛屿数量
+    """
+    def bfs(i, j, grid, visited):
+        if i > 0 and grid[i-1][j] == '1' and not visited[i-1][j]:
+            visited[i-1][j] = True
+            bfs(i-1, j, grid, visited)
+        if j > 0 and grid[i][j-1] == '1' and not visited[i][j-1]:
+            visited[i][j-1] = True
+            bfs(i, j-1, grid, visited)
+        if i < len(grid)-1 and grid[i+1][j] == '1' and not visited[i+1][j]:
+            visited[i+1][j] = True
+            bfs(i+1, j, grid, visited)
+        if j < len(grid[0])-1 and grid[i][j+1] == '1' and not visited[i][j+1]:
+            visited[i][j+1] = True
+            bfs(i, j+1, grid, visited)
+
+    count = 0
+    visited = [[False] * len(_) for _ in grid]
+    for i in range(len(grid)):
+        for j in range(len(grid[0])):
+            if grid[i][j] == '1' and not visited[i][j]:
+                visited[i][j] = True
+                count += 1
+                bfs(i, j, grid, visited)
+    return count
+
+
+def rangeBitwiseAnd(left: int, right: int) -> int:
+    """
+    201. 数字范围按位与
+    """
+    if left == right:
+        return left
+
+    left = bin(left)[2:]
+    right = bin(right)[2:]
+
+    if len(left) != len(right):
+        return 0
+
+    result = '0b'
+    for i in range(len(left)):
+        if left[i] == right[i]:
+            result += left[i]
+        else:
+            break
+    left = left[len(result)-2:]
+    right = right[len(result)-2:]
+
+    result += '0' * len(left)
+    return int(result, 2)
+
+
+def removeElements(head: ListNode, val: int) -> ListNode:
+    """
+    203. 移除链表元素
+    """
+    pprev = ListNode()
+    pprev.next = head
+
+    prev, p = pprev, head
+    while p:
+        if p.val == val:
+            p = p.next
+            prev.next = p
+            continue
+        p = p.next
+        prev = prev.next
+    return pprev.next
+
+
+def countPrimes(n: int) -> int:
+    """
+    204. 计数质数
+    """
+    primes = []
+    isPrime = [True] * n
+    for i in range(2, n):
+        if isPrime[i]:
+            primes.append(i)
+        for p in primes:
+            if i * p >= n:
+                break
+            isPrime[i*p] = False
+            if p != 1 and i % p == 0:
+                break
+    return len(primes)
+
+
+def canFinish(numCourses: int, prerequisites: List[List[int]]) -> bool:
+    """
+    207. 课程表
+    """
+    indegree, outdegree = {}, {}
+    for p in prerequisites:
+        indegree[p[1]] = indegree.get(p[1], 0) + 1
+        outdegree.setdefault(p[0], []).append(p[1])
+
+    zeroindegrees = list(set(range(numCourses)) - set(indegree.keys()))
+    while zeroindegrees:
+        z = zeroindegrees.pop(-1)
+        for out in outdegree.get(z, []):
+            indegree[out] -= 1
+            if indegree[out] == 0:
+                zeroindegrees.append(out)
+                indegree.pop(out)
+    return not indegree
+
+
+
+def minSubArrayLen(target: int, nums: List[int]) -> int:
+    """
+    209. 长度最小的子数组
+    """
+    i, total = 0, 0
+    min_length = len(nums) + 1
+    for j in range(len(nums)):
+        total += nums[j]
+        while i <= j and total >= target:
+            min_length = min(min_length, j-i+1)
+            total -= nums[i]
+            i += 1
+        if min_length == 1:
+            break
+    return min_length if min_length != len(nums) + 1 else 0
+
+
 def rob2(nums: list) -> int:
     """
     213. 打家劫舍 II
@@ -865,6 +1148,71 @@ def rob2(nums: list) -> int:
         return nums[0]
 
     return max(rob(nums[1:]), rob(nums[:-1]))
+
+
+def findKthLargest(nums: List[int], k: int) -> int:
+    """
+    215. 数组中的第K个最大元素
+    """
+    kHeap = nums[:k].copy()
+    heapq.heapify(kHeap)
+    for i in nums[k:]:
+        heapq.heappushpop(kHeap, i)
+    return kHeap[0]
+
+
+def containsDuplicate(nums: List[int]) -> bool:
+    """
+    217. 存在重复元素
+    """
+    s = set()
+    for e in nums:
+        if e in s:
+            return True
+        else:
+            s.add(e)
+    return False
+
+
+def findKthLargest2(nums: List[int], k: int) -> int:
+    """
+    自己实现堆
+    """
+    def push(nums: List[int], i: int):
+        # 不断提升
+        while i and nums[i] > nums[(i-1)//2]:
+            nums[i], nums[(i-1)//2] = nums[(i-1)//2], nums[i]
+            i = (i-1) // 2
+
+    def pop(nums: List[int]) -> int:
+        result = nums[0]
+
+        idx = 0
+        nums[idx] = nums.pop(-1)
+        left, right = idx*2+1, idx*2+2
+        largest = idx
+        # 不断下拉
+        while True:
+            if left < len(nums) and nums[left] > nums[idx]:
+                largest = left
+            if right < len(nums) and nums[largest] < nums[right]:
+                largest = right
+            if largest == idx:
+                break
+
+            nums[idx], nums[largest] = nums[largest], nums[idx]
+            idx = largest
+            left, right = idx*2+1, idx*2+2
+        return result
+
+    def heapify(nums: List[int]):
+        for i in range(1, len(nums)):
+            push(nums, i)
+
+    heapify(nums)
+    for _ in range(k-1):
+        pop(nums)
+    return nums[0]
 
 
 def isUgly(n: int) -> bool:
@@ -901,6 +1249,64 @@ def nthUglyNumber(n: int) -> int:
     return dp[n]
 
 
+def lengthOfLIS(nums: List[int]) -> int:
+    """
+    300. 最长递增子序列
+    """
+    # 方法一：动态规划
+    # dp = [1] * len(nums)
+    # for i in range(1, len(nums)):
+    #     tmp = 0
+    #     for j in range(i):
+    #         if nums[j] < nums[i]:
+    #             tmp = max(tmp, dp[j])
+    #     dp[i] = tmp + 1
+    # return max(dp)
+
+    # 方法二：贪心+二分
+    # 构建一个数组d，保证d[i]是，末尾元素最小的，长度为i的最长上升子序列，的末尾元素
+    # d的长度就是就是最长子序列的长度
+    def binary_search(arr, target):
+        l, r = 0, len(arr)
+        while l < r:
+            mid = (l+r) >> 1
+            if arr[mid] == target:
+                return mid
+            elif arr[mid] < target:
+                l = mid+1
+            else:
+                r = mid
+        return l
+
+    d = []
+    for e in nums:
+        if not d or e > d[-1]:
+            d.append(e)
+        else:
+            d[binary_search(d, e)] = e
+    return len(d)
+
+
+
+def intersect(nums1: List[int], nums2: List[int]) -> List[int]:
+    """
+    350. 两个数组的交集 II
+    """
+    nums1, nums2 = sorted(nums1), sorted(nums2)
+    result = []
+    i, j = 0, 0
+    while i < len(nums1) and j < len(nums2):
+        if nums1[i] == nums2[j]:
+            result.append(nums1[i])
+            i += 1
+            j += 1
+        elif nums1[i] < nums2[j]:
+            i += 1
+        else:
+            j += 1
+    return result
+
+
 def findMaxForm(strs, m, n) -> int:
     """
     474. 一和零
@@ -917,6 +1323,37 @@ def findMaxForm(strs, m, n) -> int:
                 # 这里每次修改i,j时，用到的i-m_,j-n_总比i,j要小，即为还未修改的上一个状态的值
                 dp[i][j] = max(dp[i][j], 1+dp[i-m_][j-n_])
     return dp[m][n]
+
+
+def topKFrequent(words: List[str], k: int) -> List[str]:
+    """
+    692. 前K个高频单词
+    """
+    class Entry:
+        def __init__(self, word, count):
+            self.word = word
+            self.count = count
+
+        def __lt__(self, other):
+            result1 = self.count < other.count
+            result2 = self.count == other.count and self.word > other.word
+            return result1 or result2
+
+    entries = {}
+    for w in words:
+        entries[w] = entries.get(w, 0) + 1
+
+    heap = []
+    dummy = []
+    for idx, (word, count) in enumerate(entries.items()):
+        if idx < k:
+            heapq.heappush(heap, Entry(word, count))
+        else:
+            heapq.heappushpop(heap, Entry(word, count))
+    result = []
+    while heap:
+        result.append(heapq.heappop(heap).word)
+    return result[::-1]
 
 
 def minDiffInBST(root: TreeNode) -> int:
@@ -942,6 +1379,27 @@ def minDiffInBST(root: TreeNode) -> int:
     return result[0]
 
 
+def isCousins(root: TreeNode, x: int, y: int) -> bool:
+    """
+    993. 二叉树的堂兄弟节点
+    """
+    parents, depths = [], []
+
+    def traverse(node, parent=None, depth=0):
+        if node is None:
+            return
+        if node.val in [x, y]:
+            parents.append(parent)
+            depths.append(depth)
+
+        if len(parents) == 2:
+            return
+        traverse(node.left, node, depth+1)
+        traverse(node.right, node, depth+1)
+
+    traverse(root)
+    return parents[0] != parents[1] and depths[0] == depths[1]
+
 # 1006
 def clumsy(N):
     product_div = []
@@ -956,3 +1414,24 @@ def clumsy(N):
     result = sum(range(N - 3, 0, -4))
     result = result + product_div[0] - sum(product_div[1:]) if len(product_div) else result
     return result
+
+
+def kthLargestValue(matrix: List[List[int]], k: int) -> int:
+    """
+    1738. 找出第 K 大的异或坐标值
+    """
+    valueMatrix = [[] for _ in matrix]
+    values = []
+    for i in range(len(matrix)):
+        for j in range(len(matrix[0])):
+            if i == 0 and j == 0:
+                valueMatrix[i].append(matrix[i][j])
+            elif i == 0:
+                valueMatrix[i].append(matrix[i][j] ^ valueMatrix[i][j-1])
+            elif j == 0:
+                valueMatrix[i].append(matrix[i][j] ^ valueMatrix[i-1][j])
+            else:
+                valueMatrix[i].append(matrix[i][j] ^ valueMatrix[i-1][j] ^ valueMatrix[i][j-1] ^ valueMatrix[i-1][j-1])
+            heapq.heappush(values, valueMatrix[i][-1])
+    asdf = heapq.nlargest(k, values)
+    return heapq.nlargest(k, values)[-1]
