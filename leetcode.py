@@ -107,29 +107,58 @@ def findMedianSortedArrays(nums1: list, nums2: list) -> float:
     return (findKthSmallest(nums1, nums2, left) + findKthSmallest(nums1, nums2, right)) / 2
 
 
-def convert(s: str, numRows: int):
+def longestPalindrome(s: str) -> str:
+    """
+    5. 最长回文子串
+    """
+    def findPalindrome(s: str, idx1: int, idx2: int):
+        result_str = s[idx1]
+        while idx1 >= 0 and idx2 < len(s):
+            if s[idx1] == s[idx2]:
+                result_str = s[idx1:idx2 + 1]
+
+                idx1 -= 1
+                idx2 += 1
+            else:
+                break
+        return result_str
+
+    result = ""
+    for i in range(len(s)):
+        result1 = findPalindrome(s, i, i)
+        result2 = findPalindrome(s, i, i+1)
+        result = result1 if len(result1) > len(result) else result
+        result = result2 if len(result2) > len(result) else result
+    return result
+
+
+def convert(s: str, numRows: int) -> str:
     """
     6. Z 字形变换
+    先向下后向上，记录每行的字符
     """
+    # 如果行数为１，则直接返回即可
     if numRows == 1:
         return s
 
-    arrs = [[] for _ in range(numRows)]
+    row = 0
+    direct = 1
 
-    i, step = 0, 1
-    for ch in s:
-        arrs[i].append(ch)
-        i += step
+    from collections import defaultdict
+    row_strs = defaultdict(list)
 
-        if i >= numRows:
-            i = numRows-2
-            step = -1
-        if i <= -1:
-            i = 1
-            step = 1
+    for i in range(len(s)):
+        row_strs[row].append(s[i])
+        if row == numRows - 1:
+            direct = -1
+        if row == 0:
+            direct = 1
+        row += direct
 
-    arrs = ["".join(i) for i in arrs]
-    return "".join(arrs)
+    result = ""
+    for _, line in row_strs.items():
+        result += "".join(line)
+    return result
 
 
 def reverse(x: int) -> int:
@@ -183,6 +212,37 @@ def longestCommonPrefix(strs: list) -> str:
     return prefix
 
 
+def isMatch(s: str, p: str) -> bool:
+    """
+    10. 正则表达式匹配
+    动态规划，注意dp矩阵的下标与字符串下标的差异
+    """
+    def match(i: int, j: int) -> bool:
+        """
+        匹配s中第i个字符和p中第j个字符
+        """
+        if i == 0:
+            return False
+        return p[j-1] == '.' or s[i-1] == p[j-1]
+
+    def isStar(j: int) -> bool:
+        return p[j-1] == '*'
+
+    dp = [[False] * (len(p)+1) for _ in range(len(s)+1)]
+    dp[0][0] = True
+
+    # 在dp矩阵中，<i,j>表示匹配到s中第i个字符，p中第j个字符
+    for i in range(len(s)+1):
+        for j in range(1, len(p)+1):
+            if isStar(j):
+                dp[i][j] = dp[i][j-2]
+                if match(i, j-1):
+                    dp[i][j] |= dp[i-1][j]
+            else:
+                dp[i][j] |= match(i, j) and dp[i-1][j-1]
+    return dp[len(s)][len(p)]
+
+
 def maxArea(height: list) -> int:
     """
     11. 盛最多水的容器
@@ -197,6 +257,67 @@ def maxArea(height: list) -> int:
         else:
             r -= 1
     return area
+
+
+def intToRoman(num: int) -> str:
+    """
+    12. 数字转罗马字符
+    """
+    def bitToRoman(n: int, level: int) -> str:
+        ones = ['I', 'X', 'C', 'M']
+        fives = ['V', 'L', 'D']
+
+        if n <= 3:
+            return ones[level] * n
+        elif n == 4:
+            return ones[level] + fives[level]
+        elif 5 <= n <= 8:
+            return fives[level] + ones[level] * (n-5)
+        elif n == 9:
+            return ones[level] + ones[level+1]
+
+    result = ""
+    str_num = str(num)
+    for i in range(len(str_num)):
+        result = result + bitToRoman(int(str_num[i]), len(str_num)-i-1)
+    return result
+
+
+def romanToInt(s: str) -> int:
+    """
+    13.　罗马字符转数字
+    """
+    special = {'IV': 4, 'IX': 9, 'XL': 40, 'XC': 90, 'CD': 400, 'CM': 900}
+    normal = {'I': 1, 'V': 5, 'X': 10, 'L': 50, 'C': 100, 'D': 500, 'M': 1000}
+
+    result = 0
+    last_ch = '#'
+    for ch in s:
+        if last_ch == '#':
+            last_ch = ch
+        else:
+            if last_ch + ch in special:
+                result += special[last_ch+ch]
+                last_ch = '#'
+            else:
+                result += normal[last_ch]
+                last_ch = ch
+    if last_ch != '#':
+        result += normal[last_ch]
+    return result
+
+
+def longestCommonPrefix(strs: List[str]) -> str:
+    """
+    14. 最长公共前缀
+    """
+    if not strs:
+        return ""
+    length0, count = len(strs[0]), len(strs)
+    for i in range(length0):
+        if any(i == len(strs[j]) or strs[j][i] != strs[0][i] for j in range(1, count)):
+            return strs[0][:i]
+    return strs[0]
 
 
 def threeSum(nums: list):
@@ -304,6 +425,59 @@ def fourSum(nums: list, target: int) -> list:
                 if nums[k] + nums[l] == t:
                     result.append([nums[i],nums[j],nums[k],nums[l]])
     return result
+
+
+def removeNthFromEnd(head: ListNode, n: int) -> ListNode:
+    """
+    19. 删除链表的倒数第 N 个结点
+    双指针，第一个指针先走n步，然后两个指针一起向前走。当第一个指针到达末尾时，第二个指针刚好在要删除的节点那里
+    """
+    prev = ListNode(next=head)
+    p1, p2 = prev, prev
+    for _ in range(n):
+        p1 = p1.next
+
+    while p1.next:
+        p1 = p1.next
+        p2 = p2.next
+    p2.next = p2.next.next
+    return prev.next
+
+
+def isValid(s: str) -> bool:
+    """
+    20. 有效的括号
+    """
+    def match(ch1: str, ch2: str) -> bool:
+        case1 = (ch1 == '(' and ch2 == ')')
+        case2 = (ch1 == '[' and ch2 == ']')
+        case3 = (ch1 == '{' and ch2 == '}')
+        return any([case1, case2, case3])
+
+    stack = []
+    for ch in s:
+        if ch in ['(', '[', '{']:
+            stack.append(ch)
+        elif stack and match(stack[-1], ch):
+            stack.pop(-1)
+        else:
+            return False
+    return not stack
+
+
+def mergeTwoLists(l1: ListNode, l2: ListNode) -> ListNode:
+    """
+    21. 合并两个有序链表
+    用递归的思想逐个合并节点
+    """
+    if not l1 or not l2:
+        return l1 if not l2 else l2
+    if l1.val < l2.val:
+        l1.next = mergeTwoLists(l1.next, l2)
+        return l1
+    else:
+        l2.next = mergeTwoLists(l1, l2.next)
+        return l2
 
 
 def generateParenthesis(n: int) -> list:
@@ -1307,6 +1481,52 @@ def intersect(nums1: List[int], nums2: List[int]) -> List[int]:
     return result
 
 
+def validUtf8(data: List[int]) -> bool:
+    """
+    393. UTF-8 编码验证
+    """
+    # data = [format(v, '08b')[-8:] for v in data]
+    #
+    # def checkBytes(v: str) -> int:
+    #     if v[0] == '0':
+    #         return 1
+    #     for i in range(8):
+    #         if v[i] == '0':
+    #             break
+    #     return i if 1 < i <= 4 else -1
+    #
+    # def checkN(values: List[str]) -> bool:
+    #     for v in values[1:]:
+    #         if v[0] != '1' or v[1] != '0':
+    #             return False
+    #     return True
+    #
+    # while data:
+    #     n = checkBytes(data[0])
+    #     if n == -1 or n > len(data) or not checkN(data[:n]):
+    #         return False
+    #     data = data[n:]
+    # return True
+
+    n = 0
+    for i in range(len(data)):
+        if n > 0:
+            if data[i] >> 6 != 0b10:
+                return False
+            n -= 1
+        elif data[i] >> 7 == 0:
+            n = 0
+        elif data[i] >> 5 == 0b110:
+            n = 1
+        elif data[i] >> 4 == 0b1110:
+            n = 2
+        elif data[i] >> 3 == 0b11110:
+            n = 3
+        else:
+            return False
+    return n == 0
+
+
 def findMaxForm(strs, m, n) -> int:
     """
     474. 一和零
@@ -1414,6 +1634,31 @@ def clumsy(N):
     result = sum(range(N - 3, 0, -4))
     result = result + product_div[0] - sum(product_div[1:]) if len(product_div) else result
     return result
+
+
+def countParis(deliciousness: List[int]) -> int:
+    """
+    1711. 大餐计数
+    """
+    targets = set([2**i for i in range(22)])
+
+    from collections import defaultdict
+    course_dict = defaultdict(int)
+    for course in deliciousness:
+        course_dict[course] += 1
+
+    result = 0
+    courses = list(course_dict.keys())
+    for course in courses:
+        for target in targets:
+            c = target - course
+            if c in course_dict:
+                if c == course:
+                    result += course_dict[course] * (course_dict[course]-1) // 2
+                else:
+                    result += course_dict[course] * course_dict[c]
+        course_dict.pop(course)
+    return result % (10**9+7)
 
 
 def kthLargestValue(matrix: List[List[int]], k: int) -> int:

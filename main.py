@@ -5,6 +5,6 @@ from datastructure import *
 if __name__ == '__main__':
     result = None
 
-    result = longestPalindrome("babad")
+    result = isValid("([)]")
 
     print(result)
